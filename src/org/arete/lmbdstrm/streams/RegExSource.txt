@@ -1,0 +1,5 @@
+This is a new file.
+This file has lot of lines.
+Line 1 is one.
+Line 2 is two.
+Line 3 is three.
