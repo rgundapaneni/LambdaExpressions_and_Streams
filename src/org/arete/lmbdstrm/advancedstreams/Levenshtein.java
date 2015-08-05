@@ -91,6 +91,7 @@ public class Levenshtein {
    * @param args the command line arguments (unused)
    */
   public static void main(String[] args) {
+
     System.out.println(lev("kitten", "sitting"));
     System.out.println(lev("flaw", "lawn"));
     System.out.println(lev("gumbo", "gambol"));

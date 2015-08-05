@@ -7,7 +7,10 @@ package org.arete.lmbdstrm.advancedstreams;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Simon Ritter (@speakjava)
@@ -24,7 +27,7 @@ public class Lesson3 {
    * @param <T> The type of the result provided by the Supplier
    * @param label Description of what's being measured
    * @param supplier The Supplier to measure execution time of
-   * @return
+   * @return returns result from one run
    */
   static <T> T measureOneRun(String label, Supplier<T> supplier) {
     long startTime = System.nanoTime();
@@ -64,11 +67,22 @@ public class Lesson3 {
    * @return Matrix of Levenshtein distances
    */
   static int[][] computeLevenshtein(List<String> wordList, boolean parallel) {
+
     final int LIST_SIZE = wordList.size();
     int[][] distances = new int[LIST_SIZE][LIST_SIZE];
-    
+
     // YOUR CODE HERE
-    
+    Stream<String> wordListStream = parallel? wordList.stream().parallel() : wordList.stream().sequential();
+
+    //NOTE: As the wordList size increases, parallel process performs better
+    //      with pipelines with NO dependencies between elements of the stream
+    wordListStream.peek(seedWord -> {
+      int seedIndex = wordList.indexOf(seedWord);
+      for (int index = 0; index < wordList.size(); index++) {
+        distances[seedIndex][index] = Levenshtein.lev(seedWord, wordList.get(index));
+      }
+    }).count();
+
     return distances;
   }
   
@@ -80,9 +94,18 @@ public class Lesson3 {
    * @return The list processed in whatever way you want
    */
   static List<String> processWords(List<String> wordList, boolean parallel) {
+
     // YOUR CODE HERE
-    
-    return null;
+    Stream<String> wordListStream = parallel? wordList.stream().parallel() : wordList.stream().sequential();
+
+    //NOTE: As the wordList size increases, sequential process performs better
+    //      with pipelines with dependencies between elements of the stream
+    return wordListStream.sorted()
+                                         .map(String::toLowerCase)
+                                         .filter(s -> s.startsWith("t") || s.startsWith("s") || s.startsWith("r") ||
+                                                      s.startsWith("a") || s.startsWith("b") || s.startsWith("c"))
+                                         .distinct()
+                                         .collect(Collectors.toList());
   }
 
   /**
@@ -92,13 +115,14 @@ public class Lesson3 {
    * @throws IOException If word file cannot be read
    */
   public static void main(String[] args) throws IOException {
+
     RandomWords fullWordList = new RandomWords();
-    List<String> wordList = fullWordList.createList(1000);
+    List<String> wordList = fullWordList.createList(100);
 
     measure("Sequential", () -> computeLevenshtein(wordList, false));
     measure("Parallel", () -> computeLevenshtein(wordList, true));
     
-//    measure("Sequential", () -> processWords(wordList, false));
-//    measure("Parallel", () -> processWords(wordList, true));
+    measure("Sequential", () -> processWords(wordList, false));
+    measure("Parallel", () -> processWords(wordList, true));
   }
 }
