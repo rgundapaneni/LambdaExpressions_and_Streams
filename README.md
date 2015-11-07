@@ -1,6 +1,6 @@
 # Lambda and streams in java
 
-Lambda and streams features added in JDK 8 are a great improvments in java language.
+Lambda expressions and streams are two features added in JDK 8. These two features are great additions to the language.
 
 - Allows parallel processing
 - Filters in streams behaves as transformers of the strams
